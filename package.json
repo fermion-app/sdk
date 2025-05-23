@@ -34,7 +34,7 @@
 		"url": "https://github.com/fermion-app/sdk.git"
 	},
 	"scripts": {
-		"build": "tsup src/*.ts --format cjs,esm --dts --outDir dist",
+		"build": "tsup",
 		"release": "pnpm run build && changeset publish",
 		"lint": "tsc && eslint . --ext .ts",
 		"lint:fix": "eslint . --ext .ts --fix",
