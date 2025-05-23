@@ -19,7 +19,7 @@ export interface PrivateEmbedOptions {
 /**
  * Options for M3U8 playback source
  */
-export interface PlaybackSourceOptions {
+interface PlaybackSourceOptions {
 	/** CDN origin URL for the video */
 	origin: string
 	/** Path to the M3U8 playlist file */
@@ -33,7 +33,7 @@ export interface PlaybackSourceOptions {
 /**
  * Options for processing M3U8 content
  */
-export interface M3U8Options {
+interface M3U8Options {
 	/** Base URL for video segments */
 	segmentBaseUrl: string
 	/** Signed URL parameters to append to segment URLs */

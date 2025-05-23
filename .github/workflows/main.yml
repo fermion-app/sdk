@@ -19,3 +19,58 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm run lint && pnpm run build
+      
+      - name: Test package installation
+        run: |
+          pnpm pack
+          mkdir test-project
+          cd test-project
+          cat > package.json << 'EOF'
+          {
+            "name": "test-project",
+            "version": "1.0.0",
+            "private": true,
+            "type": "module",
+            "dependencies": {
+              "@fermion-app/sdk": "file:../fermion-app-sdk-0.1.0.tgz"
+            },
+            "devDependencies": {
+              "typescript": "5.4.2",
+              "tsx": "4.7.1"
+            }
+          }
+          EOF
+          
+          cat > tsconfig.json << 'EOF'
+          {
+            "compilerOptions": {
+              "target": "ES2020",
+              "module": "ESNext",
+              "moduleResolution": "bundler",
+              "strict": true,
+              "esModuleInterop": true,
+              "skipLibCheck": true
+            },
+            "include": ["src/**/*"]
+          }
+          EOF
+          
+          mkdir -p src
+          cat > src/test.ts << 'EOF'
+          import { FermionRecordedVideo } from "@fermion-app/sdk/recorded-video";
+          import { sum } from "@fermion-app/sdk/test";
+          
+          // Test recorded-video
+          const video = new FermionRecordedVideo({
+            videoId: "test",
+            websiteHostname: "test.fermion.app"
+          });
+          
+          // Test test module
+          const result = sum(1, 2);
+          console.log("Import test passed!", { result });
+          EOF
+          
+          pnpm install
+          pnpm tsc --noEmit
+          pnpm node --loader tsx src/test.ts
