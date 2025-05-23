@@ -22,6 +22,9 @@ jobs:
       
       - name: Test package installation
         run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          TARBALL_NAME="${PACKAGE_NAME//\//-}-${PACKAGE_VERSION}.tgz"
           pnpm pack
           mkdir test-project
           cd test-project
@@ -32,7 +35,7 @@ jobs:
             "private": true,
             "type": "module",
             "dependencies": {
-              "@fermion-app/sdk": "file:../fermion-app-sdk-0.1.0.tgz"
+              "@fermion-app/sdk": "file:../${TARBALL_NAME}"
             },
             "devDependencies": {
               "typescript": "5.4.2",
