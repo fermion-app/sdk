@@ -24,7 +24,7 @@ jobs:
         run: |
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
           PACKAGE_NAME=$(node -p "require('./package.json').name")
-          TARBALL_NAME="${PACKAGE_NAME//\//-}-${PACKAGE_VERSION}.tgz"
+          TARBALL_NAME="fermion-app-sdk-${PACKAGE_VERSION}.tgz"
           echo "Tarball name: ${TARBALL_NAME}"
           pnpm pack
           echo "Contents of current directory:"
