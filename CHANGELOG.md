@@ -1,5 +1,11 @@
 # @fermion-app/sdk
 
+## 0.1.2
+
+### Patch Changes
+
+-   e7677de: ignore test files in build
+
 ## 0.1.1
 
 ### Patch Changes
