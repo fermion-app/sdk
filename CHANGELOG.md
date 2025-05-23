@@ -1,5 +1,11 @@
 # @fermion-app/sdk
 
+## 0.1.1
+
+### Patch Changes
+
+-   1e7c0dd: bugfixes with imports
+
 ## 0.1.0
 
 ### Minor Changes
