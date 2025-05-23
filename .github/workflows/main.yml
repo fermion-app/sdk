@@ -73,4 +73,4 @@ jobs:
           
           pnpm install
           pnpm tsc --noEmit
-          pnpm node --loader tsx src/test.ts
+          pnpm node --import tsx src/test.ts
