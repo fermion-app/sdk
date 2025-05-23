@@ -71,25 +71,11 @@ For advanced use cases, you can use the M3U8 playback feature. This is useful wh
 -   Implement your own ABR (Adaptive Bitrate) logic
 -   Handle video decryption manually
 
-> **Important**: To use M3U8 playback, you must first call the Fermion API endpoint `get-signed-url-data-for-recorded-video-playback` from your backend server. This endpoint requires your Fermion API key and returns the necessary playback options.
+> **Important**: To use M3U8 playback, you must first call the Fermion API endpoint `get-signed-url-data-for-recorded-video-playback` from your backend server. This endpoint requires your Fermion API key and returns the necessary playback options. See the [API documentation](https://api.fermion.app/#tag/video/POST/public/get-signed-url-data-for-recorded-video-playback) for more details.
 
 ```typescript
 // On your backend server
-const response = await fetch(
-	'https://api.fermion.app/public/get-signed-url-data-for-recorded-video-playback',
-	{
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			Authorization: `Bearer ${FERMION_API_KEY}`
-		},
-		body: JSON.stringify({
-			videoId: 'your-video-id'
-		})
-	}
-)
-
-const playbackOptions = await response.json()
+const playbackOptions = await fetch('<fermion API endpoint>')
 ```
 
 Then use these options with the SDK:
