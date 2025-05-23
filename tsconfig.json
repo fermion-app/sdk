@@ -20,6 +20,6 @@
 		"declaration": true,
 		"types": ["vitest/globals"]
 	},
-	"include": ["src/**/*", "test-imports.ts"],
+	"include": ["src/**/*", "vitest.config.ts"],
 	"exclude": ["node_modules", "dist"]
 }
