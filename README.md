@@ -71,18 +71,41 @@ For advanced use cases, you can use the M3U8 playback feature. This is useful wh
 -   Implement your own ABR (Adaptive Bitrate) logic
 -   Handle video decryption manually
 
+> **Important**: To use M3U8 playback, you must first call the Fermion API endpoint `get-signed-url-data-for-recorded-video-playback` from your backend server. This endpoint requires your Fermion API key and returns the necessary playback options.
+
+```typescript
+// On your backend server
+const response = await fetch(
+	'https://api.fermion.app/public/get-signed-url-data-for-recorded-video-playback',
+	{
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${FERMION_API_KEY}`
+		},
+		body: JSON.stringify({
+			videoId: 'your-video-id'
+		})
+	}
+)
+
+const playbackOptions = await response.json()
+```
+
+Then use these options with the SDK:
+
 ```typescript
 const video = new FermionRecordedVideo({
 	videoId: 'your-video-id',
 	websiteHostname: 'your-domain.fermion.app'
 })
 
-// Get M3U8 playback URL
+// Get M3U8 playback URL using the options from the API
 const playbackUrl = await video.getM3U8PlaybackUrl({
-	origin: 'https://cdn.example.com',
-	m3u8Pathname: '/video/playlist.m3u8',
-	decryptionKey: 'your-decryption-key',
-	signedUrlSearchParams: '?token=your-token'
+	origin: playbackOptions.origin,
+	m3u8Pathname: playbackOptions.m3u8Pathname,
+	decryptionKey: playbackOptions.decryptionKey,
+	signedUrlSearchParams: playbackOptions.signedUrlSearchParams
 })
 ```
 
@@ -100,6 +123,7 @@ Some features require server-side execution for security reasons:
 -   Operations requiring Fermion API keys
 -   Sensitive data handling
 -   Token generation and validation
+-   Fetching signed URL data for M3U8 playback
 
 ## Security Features
 
