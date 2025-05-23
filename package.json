@@ -1,0 +1,28 @@
+{
+	"name": "@fermion/sdk",
+	"license": "MIT",
+	"version": "0.0.1",
+	"main": "dist/index.js",
+	"module": "dist/index.mjs",
+	"types": "dist/index.d.ts",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/fermion-app/sdk.git"
+	},
+	"scripts": {
+		"build": "tsup index.ts --format cjs,esm --dts",
+		"release": "pnpm run build && changeset publish",
+		"lint": "tsc"
+	},
+	"devDependencies": {
+		"@changesets/cli": "2.27.1",
+		"tsup": "8.0.2",
+		"typescript": "5.4.2"
+	},
+	"packageManager": "pnpm@8.7.6"
+}
