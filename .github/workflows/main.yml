@@ -25,24 +25,25 @@ jobs:
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
           PACKAGE_NAME=$(node -p "require('./package.json').name")
           TARBALL_NAME="${PACKAGE_NAME//\//-}-${PACKAGE_VERSION}.tgz"
+          echo "Tarball name: ${TARBALL_NAME}"
           pnpm pack
+          echo "Contents of current directory:"
+          ls -la
           mkdir test-project
           cd test-project
-          cat > package.json << 'EOF'
-          {
-            "name": "test-project",
-            "version": "1.0.0",
-            "private": true,
-            "type": "module",
-            "dependencies": {
-              "@fermion-app/sdk": "file:../${TARBALL_NAME}"
+          echo "{
+            \"name\": \"test-project\",
+            \"version\": \"1.0.0\",
+            \"private\": true,
+            \"type\": \"module\",
+            \"dependencies\": {
+              \"@fermion-app/sdk\": \"file:../${TARBALL_NAME}\"
             },
-            "devDependencies": {
-              "typescript": "5.4.2",
-              "tsx": "4.7.1"
+            \"devDependencies\": {
+              \"typescript\": \"5.4.2\",
+              \"tsx\": \"4.7.1\"
             }
-          }
-          EOF
+          }" > package.json
           
           cat > tsconfig.json << 'EOF'
           {
