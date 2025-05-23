@@ -1,4 +1,4 @@
-# @fermion/sdk
+# @fermion-app/sdk
 
 ## 0.0.2
 
