@@ -1,5 +1,11 @@
 # @fermion-app/sdk
 
+## 0.2.0
+
+### Minor Changes
+
+-   2d85657: add support for video events
+
 ## 0.1.2
 
 ### Patch Changes
