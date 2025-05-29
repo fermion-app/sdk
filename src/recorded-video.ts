@@ -52,9 +52,26 @@ export interface IframeEmbedResult {
 	iframeHtml: string
 }
 
+import { validateIframeEvent } from './schemas'
+
+/**
+ * Event handlers for video playback events
+ */
+interface VideoEventHandlers {
+	/** Callback function to be called when video starts playing */
+	onVideoPlay: (callback: (data: { durationAtInSeconds: number }) => void) => void
+	/** Callback function to be called when video is paused */
+	onVideoPaused: (callback: (data: { durationAtInSeconds: number }) => void) => void
+	/** Callback function to be called when video playback ends */
+	onVideoEnded: (callback: () => void) => void
+	/** Removes all event listeners and cleans up resources */
+	dispose: () => void
+}
+
 export class FermionRecordedVideo {
 	private videoId: string
 	private websiteHostname: string
+	private eventListenerCleanup: (() => void) | null = null
 
 	constructor(options: FermionRecordedVideoOptions) {
 		this.videoId = options.videoId
@@ -192,5 +209,74 @@ export class FermionRecordedVideo {
 
 		// Create and return blob URL
 		return URL.createObjectURL(new Blob([finalM3U8], { type: 'text/plain' }))
+	}
+
+	/**
+	 * Sets up event listeners for video events from the iframe.
+	 * This method allows you to listen for video playback events (play, pause, end)
+	 * through postMessage communication with the video iframe.
+	 * Multiple calls to this method will create independent event subscriptions.
+	 *
+	 * @returns {VideoEventHandlers} An object containing methods to set up event callbacks and dispose of listeners
+	 * @example
+	 * ```typescript
+	 * const video = new FermionRecordedVideo({ videoId: '123', websiteHostname: 'example.fermion.app' });
+	 * const events = video.setupEventListenersOnVideo();
+	 *
+	 * events.onVideoPlay(() => console.log('Video started playing'));
+	 * events.onVideoPaused(() => console.log('Video was paused'));
+	 * events.onVideoEnded(() => console.log('Video ended'));
+	 *
+	 * // When done, clean up the listeners
+	 * events.dispose();
+	 * ```
+	 */
+	setupEventListenersOnVideo(): VideoEventHandlers {
+		const eventCallbacks: {
+			play?: (data: { durationAtInSeconds: number }) => void
+			pause?: (data: { durationAtInSeconds: number }) => void
+			ended?: () => void
+		} = {}
+
+		const messageHandler = (event: MessageEvent<unknown>) => {
+			// Verify the message is from our iframe
+			if (!event.origin.includes(this.websiteHostname)) return
+
+			try {
+				const data = validateIframeEvent(event.data)
+
+				switch (data.type) {
+					case 'video:play':
+						eventCallbacks.play?.({ durationAtInSeconds: data.durationAtInSeconds })
+						break
+					case 'video:pause':
+						eventCallbacks.pause?.({ durationAtInSeconds: data.durationAtInSeconds })
+						break
+					case 'video:ended':
+						eventCallbacks.ended?.()
+						break
+				}
+			} catch (error) {
+				// Invalid event data, ignore
+				console.warn('Received invalid video event data:', error)
+			}
+		}
+
+		window.addEventListener('message', messageHandler)
+
+		return {
+			onVideoPlay: callback => {
+				eventCallbacks.play = callback
+			},
+			onVideoPaused: callback => {
+				eventCallbacks.pause = callback
+			},
+			onVideoEnded: callback => {
+				eventCallbacks.ended = callback
+			},
+			dispose: () => {
+				window.removeEventListener('message', messageHandler)
+			}
+		}
 	}
 }
