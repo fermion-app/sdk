@@ -1,4 +1,4 @@
-name: CI
+name: Build, Test and Package
 on:
   push:
     branches:
@@ -19,6 +19,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm run lint && pnpm run build
+      
+      - name: Run unit tests
+        run: pnpm test
       
       - name: Test package installation
         run: |
