@@ -1,18 +1,18 @@
 /**
- * Options for initializing a FermionRecordedVideo instance
+ * Options for initializing a FermionLivestreamVideo instance
  */
-export interface FermionRecordedVideoOptions {
-	/** Unique identifier of the video on Fermion */
-	videoId: string
+export interface FermionLivestreamVideoOptions {
+	/** Unique identifier of the livestream session on Fermion */
+	liveEventSessionId: string
 	/** Your Fermion website hostname (e.g., acme.fermion.app) */
 	websiteHostname: string
 }
 
 /**
- * Options for private video embedding
+ * Options for private livestream embedding
  */
 export interface PrivateEmbedOptions {
-	/** JWT token for authenticating private video access */
+	/** JWT token for authenticating private livestream access */
 	jwtToken: string
 }
 
@@ -20,33 +20,33 @@ export interface PrivateEmbedOptions {
  * Options for M3U8 playback source
  */
 interface PlaybackSourceOptions {
-	/** CDN origin URL for the video */
+	/** CDN origin URL for the livestream */
 	origin: string
 	/** Path to the M3U8 playlist file */
-	m3u8Pathname: string
-	/** Key for decrypting the video content */
-	decryptionKey: string
+	masterM3u8Pathname: string
+	/** Key for decrypting the livestream content */
+	clearkeyDecryptionKeyInHex: string | null
 	/** Signed URL parameters for authentication */
-	signedUrlSearchParams: string
+	urlSearchParamString: string
 }
 
 /**
  * Options for processing M3U8 content
  */
 interface M3U8Options {
-	/** Base URL for video segments */
+	/** Base URL for livestream segments */
 	segmentBaseUrl: string
 	/** Signed URL parameters to append to segment URLs */
 	signedUrlSearchParams: string
 	/** URI for the decryption key */
-	keyUri: string
+	keyUri: string | null
 }
 
 /**
  * Result of iframe embedding methods
  */
 export interface IframeEmbedResult {
-	/** URL for the video iframe */
+	/** URL for the livestream iframe */
 	iframeUrl: string
 	/** Complete HTML code for the iframe */
 	iframeHtml: string
@@ -55,26 +55,25 @@ export interface IframeEmbedResult {
 import { validateIframeEvent } from './schemas'
 
 /**
- * Event handlers for video playback events
+ * Event handlers for livestream events
  */
 interface VideoEventHandlers {
-	/** Callback function to be called when video starts playing */
+	/** Callback function to be called when livestream starts playing */
 	onVideoPlay: (callback: (data: { durationAtInSeconds: number }) => void) => void
-	/** Callback function to be called when video is paused */
+	/** Callback function to be called when livestream is paused */
 	onVideoPaused: (callback: (data: { durationAtInSeconds: number }) => void) => void
-	/** Callback function to be called when video playback ends */
+	/** Callback function to be called when livestream ends */
 	onVideoEnded: (callback: () => void) => void
 	/** Removes all event listeners and cleans up resources */
 	dispose: () => void
 }
 
-export class FermionRecordedVideo {
-	private videoId: string
+export class FermionLivestreamVideo {
+	private liveEventSessionId: string
 	private websiteHostname: string
-	private eventListenerCleanup: (() => void) | null = null
 
-	constructor(options: FermionRecordedVideoOptions) {
-		this.videoId = options.videoId
+	constructor(options: FermionLivestreamVideoOptions) {
+		this.liveEventSessionId = options.liveEventSessionId
 
 		try {
 			// Try to construct a URL with the hostname to validate it
@@ -88,40 +87,17 @@ export class FermionRecordedVideo {
 	}
 
 	/**
-	 * Get iframe code for publicly embeddable video
-	 */
-	getPubliclyEmbedPlaybackIframeCode(): IframeEmbedResult {
-		const encodedVideoId = encodeURIComponent(this.videoId)
-		const iframeUrl = `https://${this.websiteHostname}/embed/recorded-video?video-id=${encodedVideoId}`
-		const iframeHtml = `<iframe
-      width="1280"
-      height="720"
-      src="${iframeUrl}"
-      title="Video"
-      frameborder="0"
-      allow="allow-same-origin; camera *;microphone *;display-capture *;encrypted-media;"
-      referrerpolicy="strict-origin-when-cross-origin"
-      allowfullscreen
-    ></iframe>`
-
-		return {
-			iframeUrl,
-			iframeHtml
-		}
-	}
-
-	/**
-	 * Get iframe code for privately embeddable video (requires JWT token)
+	 * Get iframe code for privately embeddable livestream (requires JWT token)
 	 */
 	getPrivateEmbedPlaybackIframeCode(options: PrivateEmbedOptions): IframeEmbedResult {
-		const encodedVideoId = encodeURIComponent(this.videoId)
+		const encodedLiveEventSessionId = encodeURIComponent(this.liveEventSessionId)
 		const encodedToken = encodeURIComponent(options.jwtToken)
-		const iframeUrl = `https://${this.websiteHostname}/embed/recorded-video?video-id=${encodedVideoId}&token=${encodedToken}`
+		const iframeUrl = `https://${this.websiteHostname}/embed/live-session?liveEventSessionId=${encodedLiveEventSessionId}&token=${encodedToken}`
 		const iframeHtml = `<iframe
       width="1280"
       height="720"
       src="${iframeUrl}"
-      title="Video"
+      title="Livestream"
       frameborder="0"
       allow="allow-same-origin; camera *;microphone *;display-capture *;encrypted-media;"
       referrerpolicy="strict-origin-when-cross-origin"
@@ -150,20 +126,24 @@ export class FermionRecordedVideo {
 			if (line === '#EXTM3U') {
 				processedLines.push(line)
 			} else if (line.startsWith('#EXT-X-KEY')) {
-				const match = line.match(/IV=([^,]+)/)
-				const iv = match?.[1]
-
-				if (!iv) {
-					throw new Error('IV not found in #EXT-X-KEY line')
-				}
-
-				if (!keyInserted) {
-					processedLines.push(`#EXT-X-KEY:METHOD=AES-128,URI="${keyUri}",IV=${iv}`)
+				if (keyUri == null) {
+					// nothing to do
 				} else {
-					processedLines.push(line)
-				}
+					const match = line.match(/IV=([^,]+)/)
+					const iv = match?.[1]
 
-				keyInserted = true
+					if (!iv) {
+						throw new Error('IV not found in #EXT-X-KEY line')
+					}
+
+					if (!keyInserted) {
+						processedLines.push(`#EXT-X-KEY:METHOD=AES-128,URI="${keyUri}",IV=${iv}`)
+					} else {
+						processedLines.push(line)
+					}
+
+					keyInserted = true
+				}
 			} else if (line !== '' && !line.startsWith('#')) {
 				const fullUrl = `${segmentBaseUrl}/${line}${signedUrlSearchParams}`
 				processedLines.push(fullUrl)
@@ -176,35 +156,46 @@ export class FermionRecordedVideo {
 	}
 
 	/**
-	 * Get M3U8 playback URL for the video
+	 * Get M3U8 playback URL for the livestream
 	 * @param options Playback source options containing quality, origin, pathname, decryption key and signed URL params
 	 */
 	public async getM3U8PlaybackUrl(options: PlaybackSourceOptions): Promise<string> {
-		const { origin, m3u8Pathname, signedUrlSearchParams, decryptionKey } = options
+		const { origin, masterM3u8Pathname, urlSearchParamString, clearkeyDecryptionKeyInHex } =
+			options
 
 		// Construct base URL
-		const m3u8Url = `${origin}${m3u8Pathname}${signedUrlSearchParams}`
+		const m3u8Url = `${origin}${masterM3u8Pathname}${urlSearchParamString}`
 
 		// Download original file for further patching
 		const m3u8Content = await fetch(m3u8Url).then(t => t.text())
 
-		// Construct the decryption key for HLS
-		const decryptionKeyArray = new Uint8Array(decryptionKey.length / 2)
+		let keyUri: string | null
+		if (clearkeyDecryptionKeyInHex) {
+			// Construct the decryption key for HLS
+			const decryptionKeyArray = new Uint8Array(clearkeyDecryptionKeyInHex.length / 2)
 
-		for (let i = 0; i < decryptionKey.length; i += 2) {
-			decryptionKeyArray[i / 2] = parseInt(decryptionKey.substring(i, i + 2), 16)
+			for (let i = 0; i < clearkeyDecryptionKeyInHex.length; i += 2) {
+				decryptionKeyArray[i / 2] = parseInt(
+					clearkeyDecryptionKeyInHex.substring(i, i + 2),
+					16
+				)
+			}
+
+			// Convert Uint8Array to regular array for String.fromCharCode
+			const decryptionKeyArrayRegular = Array.from(decryptionKeyArray)
+
+			keyUri = `data:text/plain;base64,${window.btoa(
+				String.fromCharCode.apply(null, decryptionKeyArrayRegular)
+			)}`
+		} else {
+			keyUri = null
 		}
-
-		// Convert Uint8Array to regular array for String.fromCharCode
-		const decryptionKeyArrayRegular = Array.from(decryptionKeyArray)
 
 		// Construct the final m3u8 playable URL
 		const finalM3U8 = this.processM3U8(m3u8Content, {
-			segmentBaseUrl: `${origin}${m3u8Pathname.split('/').slice(0, -1).join('/')}`,
-			signedUrlSearchParams,
-			keyUri: `data:text/plain;base64,${window.btoa(
-				String.fromCharCode.apply(null, decryptionKeyArrayRegular)
-			)}`
+			segmentBaseUrl: `${origin}${masterM3u8Pathname.split('/').slice(0, -1).join('/')}`,
+			signedUrlSearchParams: urlSearchParamString,
+			keyUri
 		})
 
 		// Create and return blob URL
@@ -212,20 +203,20 @@ export class FermionRecordedVideo {
 	}
 
 	/**
-	 * Sets up event listeners for video events from the iframe.
-	 * This method allows you to listen for video playback events (play, pause, end)
-	 * through postMessage communication with the video iframe.
+	 * Sets up event listeners for livestream events from the iframe.
+	 * This method allows you to listen for livestream events (play, pause, end)
+	 * through postMessage communication with the livestream iframe.
 	 * Multiple calls to this method will create independent event subscriptions.
 	 *
 	 * @returns {VideoEventHandlers} An object containing methods to set up event callbacks and dispose of listeners
 	 * @example
 	 * ```typescript
-	 * const video = new FermionRecordedVideo({ videoId: '123', websiteHostname: 'example.fermion.app' });
-	 * const events = video.setupEventListenersOnVideo();
+	 * const livestream = new FermionLivestreamVideo({ liveEventSessionId: '123', websiteHostname: 'example.fermion.app' });
+	 * const events = livestream.setupEventListenersOnVideo();
 	 *
-	 * events.onVideoPlay(() => console.log('Video started playing'));
-	 * events.onVideoPaused(() => console.log('Video was paused'));
-	 * events.onVideoEnded(() => console.log('Video ended'));
+	 * events.onVideoPlay(() => console.log('Livestream started playing'));
+	 * events.onVideoPaused(() => console.log('Livestream was paused'));
+	 * events.onVideoEnded(() => console.log('Livestream ended'));
 	 *
 	 * // When done, clean up the listeners
 	 * events.dispose();
