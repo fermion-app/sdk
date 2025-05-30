@@ -1,5 +1,11 @@
 # @fermion-app/sdk
 
+## 0.3.1
+
+### Patch Changes
+
+-   365436c: export livestream video source
+
 ## 0.3.0
 
 ### Minor Changes
