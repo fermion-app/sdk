@@ -51,6 +51,7 @@
 		"test:ui": "vitest --ui"
 	},
 	"dependencies": {
+		"hls.js": "1.6.3",
 		"zod": "3.25.34"
 	},
 	"devDependencies": {
