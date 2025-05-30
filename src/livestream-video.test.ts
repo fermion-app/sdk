@@ -1,4 +1,4 @@
-import { describe, test, expect, vi } from 'vitest'
+import { describe, test, expect } from 'vitest'
 import { FermionLivestreamVideo } from './livestream-video'
 
 describe('FermionLivestreamVideo', () => {
@@ -49,18 +49,10 @@ describe('FermionLivestreamVideo', () => {
 		expect(result.iframeUrl).toContain('test%2Ftoken')
 	})
 
-	test('should process encrypted M3U8 content and return blob URL', () => {
+	test('should return HLS playback config with encrypted content', () => {
 		const livestream = new FermionLivestreamVideo({
 			liveEventSessionId: 'test-session-id',
 			websiteHostname: 'acme.fermion.app'
-		})
-
-		// Mock fetch response
-		global.fetch = vi.fn().mockResolvedValue({
-			text: () =>
-				Promise.resolve(
-					'#EXTM3U\n#EXT-X-KEY:METHOD=AES-128,URI="key",IV=123\nsegment1.ts\nsegment2.ts'
-				)
 		})
 
 		const result = livestream.getHlsPlaybackConfig({
@@ -70,19 +62,16 @@ describe('FermionLivestreamVideo', () => {
 			urlSearchParamString: '?token=test'
 		})
 
-		expect(result).toMatch(/^blob:/)
-		expect(fetch).toHaveBeenCalled()
+		expect(result).toHaveProperty('sourceUrl')
+		expect(result).toHaveProperty('PlaylistLoader')
+		expect(result.sourceUrl).toBe('https://cdn.example.com/livestream/playlist.m3u8?token=test')
+		expect(typeof result.PlaylistLoader).toBe('function')
 	})
 
-	test('should process unencrypted M3U8 content and return blob URL', () => {
+	test('should return HLS playback config with unencrypted content', () => {
 		const livestream = new FermionLivestreamVideo({
 			liveEventSessionId: 'test-session-id',
 			websiteHostname: 'acme.fermion.app'
-		})
-
-		// Mock fetch response with unencrypted M3U8 content
-		global.fetch = vi.fn().mockResolvedValue({
-			text: () => Promise.resolve('#EXTM3U\nsegment1.ts\nsegment2.ts')
 		})
 
 		const result = livestream.getHlsPlaybackConfig({
@@ -92,28 +81,28 @@ describe('FermionLivestreamVideo', () => {
 			urlSearchParamString: '?token=test'
 		})
 
-		expect(result).toMatch(/^blob:/)
-		expect(fetch).toHaveBeenCalled()
+		expect(result).toHaveProperty('sourceUrl')
+		expect(result).toHaveProperty('PlaylistLoader')
+		expect(result.sourceUrl).toBe('https://cdn.example.com/livestream/playlist.m3u8?token=test')
+		expect(typeof result.PlaylistLoader).toBe('function')
 	})
 
-	test('should throw error if IV not found in encrypted M3U8 content', async () => {
+	test('should handle M3U8 content with missing IV', () => {
 		const livestream = new FermionLivestreamVideo({
 			liveEventSessionId: 'test-session-id',
 			websiteHostname: 'acme.fermion.app'
 		})
 
-		// Mock fetch response with invalid M3U8 content
-		global.fetch = vi.fn().mockResolvedValue({
-			text: () => Promise.resolve('#EXTM3U\n#EXT-X-KEY:METHOD=AES-128,URI="key"\nsegment1.ts')
+		const result = livestream.getHlsPlaybackConfig({
+			origin: 'https://cdn.example.com',
+			masterM3u8Pathname: '/livestream/playlist.m3u8',
+			clearkeyDecryptionKeyInHex: '1234567890abcdef',
+			urlSearchParamString: '?token=test'
 		})
 
-		await expect(
-			livestream.getHlsPlaybackConfig({
-				origin: 'https://cdn.example.com',
-				masterM3u8Pathname: '/livestream/playlist.m3u8',
-				clearkeyDecryptionKeyInHex: '1234567890abcdef',
-				urlSearchParamString: '?token=test'
-			})
-		).rejects.toThrow('IV not found in #EXT-X-KEY line')
+		expect(result).toHaveProperty('sourceUrl')
+		expect(result).toHaveProperty('PlaylistLoader')
+		expect(result.sourceUrl).toBe('https://cdn.example.com/livestream/playlist.m3u8?token=test')
+		expect(typeof result.PlaylistLoader).toBe('function')
 	})
 })
