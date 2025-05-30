@@ -12,6 +12,11 @@
 			"types": "./dist/test.d.ts",
 			"import": "./dist/test.mjs",
 			"require": "./dist/test.js"
+		},
+		"./livestream-video": {
+			"types": "./dist/livestream-video.d.ts",
+			"import": "./dist/livestream-video.mjs",
+			"require": "./dist/livestream-video.js"
 		}
 	},
 	"typesVersions": {
@@ -21,6 +26,9 @@
 			],
 			"test": [
 				"./dist/test.d.ts"
+			],
+			"livestream-video": [
+				"./dist/livestream-video.d.ts"
 			]
 		}
 	},
