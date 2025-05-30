@@ -1,5 +1,11 @@
 # @fermion-app/sdk
 
+## 0.3.0
+
+### Minor Changes
+
+-   395a21e: add support for livestreaming video
+
 ## 0.2.0
 
 ### Minor Changes
