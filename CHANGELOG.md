@@ -1,5 +1,11 @@
 # @fermion-app/sdk
 
+## 0.3.2
+
+### Patch Changes
+
+-   de44545: return custom loader for livestreams
+
 ## 0.3.1
 
 ### Patch Changes

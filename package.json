@@ -1,7 +1,7 @@
 {
 	"name": "@fermion-app/sdk",
 	"license": "MIT",
-	"version": "0.3.1",
+	"version": "0.3.2",
 	"exports": {
 		"./recorded-video": {
 			"types": "./dist/recorded-video.d.ts",
