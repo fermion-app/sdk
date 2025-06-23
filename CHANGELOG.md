@@ -1,5 +1,11 @@
 # @fermion-app/sdk
 
+## 0.4.0
+
+### Minor Changes
+
+-   ad66f81: add more controls over video element (play/pause and get time)
+
 ## 0.3.2
 
 ### Patch Changes
