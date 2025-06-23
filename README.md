@@ -11,6 +11,8 @@ A modern TypeScript SDK for interacting with Fermion services. This library is i
 ## Features
 
 -   🎥 Video embedding with Fermion's secure player
+-   🎮 Video playback control (play/pause) via postMessage
+-   📡 Real-time video event listeners (play, pause, end, time updates)
 -   🔒 DRM protected playback and HLS clearkey support
 -   🔄 Automatic access key refreshing
 -   🌐 Isomorphic - works in both Node.js and browser
@@ -38,12 +40,14 @@ pnpm add @fermion-app/sdk
 import { FermionRecordedVideo } from '@fermion-app/sdk/recorded-video'
 ```
 
-### Video Embedding
+### Video Embedding and Control
 
-The SDK provides two methods for video embedding:
+The SDK provides comprehensive video embedding and control capabilities:
 
 1. **Public Embedding** - For videos that are publicly accessible
 2. **Private Embedding** - For videos that require authentication
+3. **Playback Control** - Programmatically control video playback
+4. **Event Listening** - Listen to video playback events in real-time
 
 ```typescript
 // Create a video instance
@@ -61,6 +65,28 @@ const privateEmbed = video.getPrivateEmbedPlaybackIframeCode({
 	jwtToken: 'your-jwt-token'
 })
 console.log(privateEmbed.iframeHtml)
+
+// Add the iframe to your DOM
+document.getElementById('video-container').innerHTML = publicEmbed.iframeHtml
+
+// Control video playback (automatically finds iframe by ID)
+video.play()
+video.pause()
+
+// Or control with specific iframe element
+const iframe = document.querySelector('iframe')
+video.play(iframe)
+video.pause(iframe)
+
+// Listen to video events
+const events = video.setupEventListenersOnVideo()
+events.onVideoPlay(data => console.log('Video started playing at', data.durationAtInSeconds))
+events.onVideoPaused(data => console.log('Video was paused at', data.durationAtInSeconds))
+events.onVideoEnded(() => console.log('Video ended'))
+events.onTimeUpdated(data => console.log('Current time:', data.currentTimeInSeconds))
+
+// Clean up event listeners when done
+events.dispose()
 ```
 
 ### M3U8 Playback
@@ -130,7 +156,8 @@ import type {
 	FermionRecordedVideoOptions,
 	PrivateEmbedOptions,
 	PlaybackSourceOptions,
-	IframeEmbedResult
+	IframeEmbedResult,
+	VideoEventHandlers
 } from '@fermion-app/sdk/recorded-video'
 ```
 

@@ -19,6 +19,12 @@ export const iframeEventSchema = z
 			type: z.literal('video:ended')
 		})
 	)
+	.or(
+		z.object({
+			type: z.literal('video:time-updated'),
+			currentTimeInSeconds: z.number()
+		})
+	)
 
 /**
  * Type for iframe events

@@ -57,21 +57,60 @@ import { validateIframeEvent } from './schemas'
 /**
  * Event handlers for video playback events
  */
-interface VideoEventHandlers {
+export interface VideoEventHandlers {
 	/** Callback function to be called when video starts playing */
 	onVideoPlay: (callback: (data: { durationAtInSeconds: number }) => void) => void
 	/** Callback function to be called when video is paused */
 	onVideoPaused: (callback: (data: { durationAtInSeconds: number }) => void) => void
 	/** Callback function to be called when video playback ends */
 	onVideoEnded: (callback: () => void) => void
+	/** Callback function to be called when video time updates */
+	onTimeUpdated: (callback: (data: { currentTimeInSeconds: number }) => void) => void
 	/** Removes all event listeners and cleans up resources */
 	dispose: () => void
 }
 
+/**
+ * FermionRecordedVideo class for embedding and controlling recorded videos
+ *
+ * This class provides functionality to:
+ * - Generate iframe embed codes for public and private videos (with unique IDs)
+ * - Control video playback (play/pause) via postMessage communication
+ * - Listen to video playback events
+ * - Process M3U8 content for direct video playback
+ *
+ * @example
+ * ```typescript
+ * const video = new FermionRecordedVideo({
+ *   videoId: '123',
+ *   websiteHostname: 'example.fermion.app'
+ * });
+ *
+ * // Get iframe HTML and add to DOM
+ * const embedResult = video.getPubliclyEmbedPlaybackIframeCode();
+ * document.getElementById('video-container').innerHTML = embedResult.iframeHtml;
+ *
+ * // Control video playback (automatically finds iframe by ID)
+ * video.play();
+ * video.pause();
+ *
+ * // Or control with specific iframe element
+ * const iframe = document.querySelector('iframe');
+ * video.play(iframe);
+ * video.pause(iframe);
+ *
+ * // Listen to video events
+ * const events = video.setupEventListenersOnVideo();
+ * events.onVideoPlay(() => console.log('Video started playing'));
+ * events.onVideoPaused(() => console.log('Video was paused'));
+ * events.onVideoEnded(() => console.log('Video ended'));
+ * ```
+ */
 export class FermionRecordedVideo {
 	private videoId: string
 	private websiteHostname: string
 	private eventListenerCleanup: (() => void) | null = null
+	private iframeId: string | null = null
 
 	constructor(options: FermionRecordedVideoOptions) {
 		this.videoId = options.videoId
@@ -88,12 +127,21 @@ export class FermionRecordedVideo {
 	}
 
 	/**
+	 * Generate a unique ID for the iframe
+	 */
+	private generateIframeId(): string {
+		return `fermion-video-iframe-${this.videoId}`
+	}
+
+	/**
 	 * Get iframe code for publicly embeddable video
 	 */
 	getPubliclyEmbedPlaybackIframeCode(): IframeEmbedResult {
 		const encodedVideoId = encodeURIComponent(this.videoId)
+		this.iframeId = this.generateIframeId()
 		const iframeUrl = `https://${this.websiteHostname}/embed/recorded-video?video-id=${encodedVideoId}`
 		const iframeHtml = `<iframe
+      id="${this.iframeId}"
       width="1280"
       height="720"
       src="${iframeUrl}"
@@ -116,8 +164,10 @@ export class FermionRecordedVideo {
 	getPrivateEmbedPlaybackIframeCode(options: PrivateEmbedOptions): IframeEmbedResult {
 		const encodedVideoId = encodeURIComponent(this.videoId)
 		const encodedToken = encodeURIComponent(options.jwtToken)
+		this.iframeId = this.generateIframeId()
 		const iframeUrl = `https://${this.websiteHostname}/embed/recorded-video?video-id=${encodedVideoId}&token=${encodedToken}`
 		const iframeHtml = `<iframe
+      id="${this.iframeId}"
       width="1280"
       height="720"
       src="${iframeUrl}"
@@ -132,6 +182,68 @@ export class FermionRecordedVideo {
 			iframeUrl,
 			iframeHtml
 		}
+	}
+
+	/**
+	 * Find iframe element by stored ID
+	 */
+	private findIframeById(): HTMLIFrameElement | null {
+		if (!this.iframeId) {
+			return null
+		}
+		return document.getElementById(this.iframeId) as HTMLIFrameElement | null
+	}
+
+	/**
+	 * Send postMessage to iframe with error handling
+	 */
+	private sendMessageToIframe(iframe: HTMLIFrameElement, message: { type: string }): void {
+		if (!iframe.contentWindow) {
+			console.error(
+				'Fermion Video: Iframe content window is not available. The iframe may not be fully loaded yet.'
+			)
+			return
+		}
+
+		try {
+			iframe.contentWindow.postMessage(message, `https://${this.websiteHostname}`)
+		} catch (error) {
+			console.error('Fermion Video: Failed to send message to iframe:', error)
+		}
+	}
+
+	/**
+	 * Play the video by sending a postMessage to the iframe
+	 * @param iframe Optional iframe element. If not provided, will search for iframe by ID
+	 */
+	play(iframe?: HTMLIFrameElement): void {
+		const targetIframe = iframe || this.findIframeById()
+
+		if (!targetIframe) {
+			console.error(
+				'Fermion Video: No iframe found. Make sure the iframe is added to the DOM and has the correct ID pattern.'
+			)
+			return
+		}
+
+		this.sendMessageToIframe(targetIframe, { type: 'video:play' })
+	}
+
+	/**
+	 * Pause the video by sending a postMessage to the iframe
+	 * @param iframe Optional iframe element. If not provided, will search for iframe by ID
+	 */
+	pause(iframe?: HTMLIFrameElement): void {
+		const targetIframe = iframe || this.findIframeById()
+
+		if (!targetIframe) {
+			console.error(
+				'Fermion Video: No iframe found. Make sure the iframe is added to the DOM and has the correct ID pattern.'
+			)
+			return
+		}
+
+		this.sendMessageToIframe(targetIframe, { type: 'video:pause' })
 	}
 
 	/**
@@ -236,6 +348,7 @@ export class FermionRecordedVideo {
 			play?: (data: { durationAtInSeconds: number }) => void
 			pause?: (data: { durationAtInSeconds: number }) => void
 			ended?: () => void
+			timeUpdated?: (data: { currentTimeInSeconds: number }) => void
 		} = {}
 
 		const messageHandler = (event: MessageEvent<unknown>) => {
@@ -255,6 +368,11 @@ export class FermionRecordedVideo {
 					case 'video:ended':
 						eventCallbacks.ended?.()
 						break
+					case 'video:time-updated':
+						eventCallbacks.timeUpdated?.({
+							currentTimeInSeconds: data.currentTimeInSeconds
+						})
+						break
 				}
 			} catch (error) {
 				// Invalid event data, ignore
@@ -273,6 +391,9 @@ export class FermionRecordedVideo {
 			},
 			onVideoEnded: callback => {
 				eventCallbacks.ended = callback
+			},
+			onTimeUpdated: callback => {
+				eventCallbacks.timeUpdated = callback
 			},
 			dispose: () => {
 				window.removeEventListener('message', messageHandler)
