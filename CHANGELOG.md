@@ -1,5 +1,11 @@
 # @fermion-app/sdk
 
+## 0.5.0
+
+### Minor Changes
+
+-   075fe8a: add support for livestream ended event
+
 ## 0.4.0
 
 ### Minor Changes
