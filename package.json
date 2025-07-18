@@ -50,8 +50,10 @@
 		"test:coverage": "vitest run --coverage",
 		"test:ui": "vitest --ui"
 	},
+	"peerDependencies": {
+		"hls.js": "1.x"
+	},
 	"dependencies": {
-		"hls.js": "1.6.3",
 		"zod": "3.25.34"
 	},
 	"devDependencies": {

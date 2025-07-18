@@ -6,7 +6,7 @@ settings:
 
 dependencies:
   hls.js:
-    specifier: 1.6.3
+    specifier: 1.x
     version: 1.6.3
   zod:
     specifier: 3.25.34
