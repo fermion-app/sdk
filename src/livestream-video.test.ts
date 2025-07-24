@@ -1,8 +1,8 @@
-import { describe, test, expect } from 'vitest'
+import { describe, test } from 'vitest'
 import { FermionLivestreamVideo } from './livestream-video'
 
 describe('FermionLivestreamVideo', () => {
-	test('should create instance with valid hostname', () => {
+	test('should create instance with valid hostname', ({ expect }) => {
 		const livestream = new FermionLivestreamVideo({
 			liveEventSessionId: 'test-session-id',
 			websiteHostname: 'acme.fermion.app'
@@ -10,7 +10,7 @@ describe('FermionLivestreamVideo', () => {
 		expect(livestream).toBeInstanceOf(FermionLivestreamVideo)
 	})
 
-	test('should throw error with invalid hostname', () => {
+	test('should throw error with invalid hostname', ({ expect }) => {
 		expect(() => {
 			new FermionLivestreamVideo({
 				liveEventSessionId: 'test-session-id',
@@ -19,7 +19,7 @@ describe('FermionLivestreamVideo', () => {
 		}).toThrow('Invalid website hostname')
 	})
 
-	test('should return iframe URL and HTML with token for private embedding', () => {
+	test('should return iframe URL and HTML with token for private embedding', ({ expect }) => {
 		const livestream = new FermionLivestreamVideo({
 			liveEventSessionId: 'test-session-id',
 			websiteHostname: 'acme.fermion.app'
@@ -36,7 +36,9 @@ describe('FermionLivestreamVideo', () => {
 		expect(result.iframeHtml).toContain(result.iframeUrl)
 	})
 
-	test('should encode both live event session ID and token in private iframe URL', () => {
+	test('should encode both live event session ID and token in private iframe URL', ({
+		expect
+	}) => {
 		const livestream = new FermionLivestreamVideo({
 			liveEventSessionId: 'test/session/id',
 			websiteHostname: 'acme.fermion.app'
@@ -49,13 +51,13 @@ describe('FermionLivestreamVideo', () => {
 		expect(result.iframeUrl).toContain('test%2Ftoken')
 	})
 
-	test('should return HLS playback config with encrypted content', () => {
+	test('should return HLS playback config with encrypted content', async ({ expect }) => {
 		const livestream = new FermionLivestreamVideo({
 			liveEventSessionId: 'test-session-id',
 			websiteHostname: 'acme.fermion.app'
 		})
 
-		const result = livestream.getHlsPlaybackConfig({
+		const result = await livestream.getHlsPlaybackConfig({
 			origin: 'https://cdn.example.com',
 			masterM3u8Pathname: '/livestream/playlist.m3u8',
 			clearkeyDecryptionKeyInHex: '1234567890abcdef',
@@ -68,13 +70,13 @@ describe('FermionLivestreamVideo', () => {
 		expect(typeof result.PlaylistLoader).toBe('function')
 	})
 
-	test('should return HLS playback config with unencrypted content', () => {
+	test('should return HLS playback config with unencrypted content', async ({ expect }) => {
 		const livestream = new FermionLivestreamVideo({
 			liveEventSessionId: 'test-session-id',
 			websiteHostname: 'acme.fermion.app'
 		})
 
-		const result = livestream.getHlsPlaybackConfig({
+		const result = await livestream.getHlsPlaybackConfig({
 			origin: 'https://cdn.example.com',
 			masterM3u8Pathname: '/livestream/playlist.m3u8',
 			clearkeyDecryptionKeyInHex: null,
@@ -87,13 +89,13 @@ describe('FermionLivestreamVideo', () => {
 		expect(typeof result.PlaylistLoader).toBe('function')
 	})
 
-	test('should handle M3U8 content with missing IV', () => {
+	test('should handle M3U8 content with missing IV', async ({ expect }) => {
 		const livestream = new FermionLivestreamVideo({
 			liveEventSessionId: 'test-session-id',
 			websiteHostname: 'acme.fermion.app'
 		})
 
-		const result = livestream.getHlsPlaybackConfig({
+		const result = await livestream.getHlsPlaybackConfig({
 			origin: 'https://cdn.example.com',
 			masterM3u8Pathname: '/livestream/playlist.m3u8',
 			clearkeyDecryptionKeyInHex: '1234567890abcdef',
