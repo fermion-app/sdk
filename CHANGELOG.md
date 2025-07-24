@@ -1,5 +1,11 @@
 # @fermion-app/sdk
 
+## 0.7.0
+
+### Minor Changes
+
+-   e7734a7: fix zod import for better compatibility in webpack 4
+
 ## 0.6.0
 
 ### Minor Changes
