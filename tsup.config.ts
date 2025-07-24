@@ -6,5 +6,8 @@ export default defineConfig({
 	dts: true,
 	outDir: 'dist',
 	clean: true,
-	ignoreWatch: ['**/*.test.ts']
+	ignoreWatch: ['**/*.test.ts'],
+	esbuildOptions(options) {
+		options.platform = 'neutral'
+	}
 })
