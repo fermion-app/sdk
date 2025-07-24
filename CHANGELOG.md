@@ -1,5 +1,11 @@
 # @fermion-app/sdk
 
+## 0.8.0
+
+### Minor Changes
+
+-   4b77260: target es2018 for webpack 4
+
 ## 0.7.0
 
 ### Minor Changes
