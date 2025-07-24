@@ -1,5 +1,11 @@
 # @fermion-app/sdk
 
+## 0.6.0
+
+### Minor Changes
+
+-   2f2ae8b: add support from root level import for legacy bundlers
+
 ## 0.5.0
 
 ### Minor Changes
