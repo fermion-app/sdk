@@ -52,11 +52,14 @@
 		"test:coverage": "vitest run --coverage",
 		"test:ui": "vitest --ui"
 	},
+	"peerDependencies": {
+		"hls.js": "1.x"
+	},
 	"dependencies": {
-		"zod": "3.25.34",
-		"hls.js": "1.6.7"
+		"zod": "3.25.34"
 	},
 	"devDependencies": {
+		"hls.js": "1.6.7",
 		"@changesets/cli": "2.27.1",
 		"@typescript-eslint/eslint-plugin": "7.1.0",
 		"@typescript-eslint/parser": "7.1.0",

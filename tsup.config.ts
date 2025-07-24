@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup'
 
 export default defineConfig({
-	entry: ['src/index.ts', 'src/recorded-video.ts', 'src/livestream-video.ts'],
+	entry: ['src/index.ts', 'src/recorded-video.ts', 'src/livestream-video.ts', 'src/test.ts'],
 	format: ['cjs', 'esm'],
 	target: 'es2015',
 	splitting: false,

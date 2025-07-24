@@ -1,4 +1,3 @@
-import Hls from 'hls.js'
 import type {
 	HlsConfig,
 	Loader,
@@ -113,13 +112,15 @@ export class FermionLivestreamVideo {
 		}
 	}
 
-	private createCustomLoader({
+	private async createCustomLoader({
 		signedUrlParam,
 		keyUri
 	}: {
 		signedUrlParam: string
 		keyUri: string | null
 	}) {
+		const Hls = await import('hls.js').then(t => t.default)
+
 		return class PlaylistLoader implements Loader<PlaylistLoaderContext> {
 			internalLoader: Loader<PlaylistLoaderContext>
 			context: PlaylistLoaderContext
