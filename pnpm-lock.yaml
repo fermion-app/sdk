@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   hls.js:
-    specifier: 1.x
-    version: 1.6.3
+    specifier: 1.6.7
+    version: 1.6.7
   zod:
     specifier: 3.25.34
     version: 3.25.34
@@ -2564,8 +2564,8 @@ packages:
       function-bind: 1.1.2
     dev: true
 
-  /hls.js@1.6.3:
-    resolution: {integrity: sha512-M0pCSdnWdZ/IrkjhbNm90QobrTCVeoemEFUAWg4olld/8y6GbWoMAoEQ1XhZPCQjgMihvQvPWJJkr8KZAcV9tg==}
+  /hls.js@1.6.7:
+    resolution: {integrity: sha512-QW2fnwDGKGc9DwQUGLbmMOz8G48UZK7PVNJPcOUql1b8jubKx4/eMHNP5mGqr6tYlJNDG1g10Lx2U/qPzL6zwQ==}
     dev: false
 
   /hosted-git-info@2.8.9:

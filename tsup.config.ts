@@ -1,13 +1,15 @@
 import { defineConfig } from 'tsup'
 
 export default defineConfig({
-	entry: ['src/index.ts', 'src/recorded-video.ts', 'src/livestream-video.ts', 'src/test.ts'],
+	entry: ['src/index.ts', 'src/recorded-video.ts', 'src/livestream-video.ts'],
 	format: ['cjs', 'esm'],
+	target: 'es2015',
+	splitting: false,
+	clean: true,
 	dts: true,
 	outDir: 'dist',
-	clean: true,
-	target: 'es2018',
 	ignoreWatch: ['**/*.test.ts'],
+	noExternal: ['zod'],
 	esbuildOptions(options) {
 		options.platform = 'neutral'
 	}
