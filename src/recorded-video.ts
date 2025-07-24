@@ -11,7 +11,7 @@ export interface FermionRecordedVideoOptions {
 /**
  * Options for private video embedding
  */
-export interface PrivateEmbedOptions {
+export interface VideoPrivateEmbedOptions {
 	/** JWT token for authenticating private video access */
 	jwtToken: string
 }
@@ -45,7 +45,7 @@ interface M3U8Options {
 /**
  * Result of iframe embedding methods
  */
-export interface IframeEmbedResult {
+export interface VideoIframeEmbedResult {
 	/** URL for the video iframe */
 	iframeUrl: string
 	/** Complete HTML code for the iframe */
@@ -136,7 +136,7 @@ export class FermionRecordedVideo {
 	/**
 	 * Get iframe code for publicly embeddable video
 	 */
-	getPubliclyEmbedPlaybackIframeCode(): IframeEmbedResult {
+	getPubliclyEmbedPlaybackIframeCode(): VideoIframeEmbedResult {
 		const encodedVideoId = encodeURIComponent(this.videoId)
 		this.iframeId = this.generateIframeId()
 		const iframeUrl = `https://${this.websiteHostname}/embed/recorded-video?video-id=${encodedVideoId}`
@@ -161,7 +161,7 @@ export class FermionRecordedVideo {
 	/**
 	 * Get iframe code for privately embeddable video (requires JWT token)
 	 */
-	getPrivateEmbedPlaybackIframeCode(options: PrivateEmbedOptions): IframeEmbedResult {
+	getPrivateEmbedPlaybackIframeCode(options: VideoPrivateEmbedOptions): VideoIframeEmbedResult {
 		const encodedVideoId = encodeURIComponent(this.videoId)
 		const encodedToken = encodeURIComponent(options.jwtToken)
 		this.iframeId = this.generateIframeId()

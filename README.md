@@ -40,6 +40,17 @@ pnpm add @fermion-app/sdk
 import { FermionRecordedVideo } from '@fermion-app/sdk/recorded-video'
 ```
 
+#### Webpack < 5 Compatibility
+
+If you're using Webpack versions older than 5, you'll need to import directly from the package root as older Webpack versions don't support the `exports` field in package.json:
+
+```typescript
+// For Webpack < 5
+import { FermionRecordedVideo } from '@fermion-app/sdk'
+```
+
+> **Recommendation**: We strongly encourage upgrading to Webpack 5+ or modern build tools like Vite to benefit from improved tree shaking, better performance, and proper module resolution via the `exports` field. This ensures you only bundle the code you actually use, resulting in smaller bundle sizes.
+
 ### Video Embedding and Control
 
 The SDK provides comprehensive video embedding and control capabilities:

@@ -19,6 +19,9 @@
 			"require": "./dist/livestream-video.js"
 		}
 	},
+	"main": "./dist/index.js",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.ts",
 	"typesVersions": {
 		"*": {
 			"recorded-video": [

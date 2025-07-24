@@ -22,7 +22,7 @@ export interface FermionLivestreamVideoOptions {
 /**
  * Options for private livestream embedding
  */
-export interface PrivateEmbedOptions {
+export interface LiveStreamPrivateEmbedOptions {
 	/** JWT token for authenticating private livestream access */
 	jwtToken: string
 }
@@ -44,7 +44,7 @@ interface PlaybackSourceOptions {
 /**
  * Result of iframe embedding methods
  */
-export interface IframeEmbedResult {
+export interface LiveStreamIframeEmbedResult {
 	/** URL for the livestream iframe */
 	iframeUrl: string
 	/** Complete HTML code for the iframe */
@@ -54,7 +54,7 @@ export interface IframeEmbedResult {
 /**
  * Event handlers for video playback events
  */
-export interface VideoEventHandlers {
+export interface LiveStreamEventHandlers {
 	/** Callback function to be called when video starts playing */
 	onVideoPlay: (callback: (data: { durationAtInSeconds: number }) => void) => void
 	/** Callback function to be called when video is paused */
@@ -90,7 +90,9 @@ export class FermionLivestreamVideo {
 	/**
 	 * Get iframe code for privately embeddable livestream (requires JWT token)
 	 */
-	getPrivateEmbedPlaybackIframeCode(options: PrivateEmbedOptions): IframeEmbedResult {
+	getPrivateEmbedPlaybackIframeCode(
+		options: LiveStreamPrivateEmbedOptions
+	): LiveStreamIframeEmbedResult {
 		const encodedLiveEventSessionId = encodeURIComponent(this.liveEventSessionId)
 		const encodedToken = encodeURIComponent(options.jwtToken)
 		const iframeUrl = `https://${this.websiteHostname}/embed/live-session?liveEventSessionId=${encodedLiveEventSessionId}&token=${encodedToken}`
@@ -222,7 +224,7 @@ export class FermionLivestreamVideo {
 	 * through postMessage communication with the video iframe.
 	 * Multiple calls to this method will create independent event subscriptions.
 	 *
-	 * @returns {VideoEventHandlers} An object containing methods to set up event callbacks and dispose of listeners
+	 * @returns {LiveStreamEventHandlers} An object containing methods to set up event callbacks and dispose of listeners
 	 * @example
 	 * ```typescript
 	 * const livestream = new FermionLivestreamVideo({
@@ -240,7 +242,7 @@ export class FermionLivestreamVideo {
 	 * events.dispose();
 	 * ```
 	 */
-	setupEventListenersOnVideo(): VideoEventHandlers {
+	setupEventListenersOnVideo(): LiveStreamEventHandlers {
 		const eventCallbacks: {
 			play?: (data: { durationAtInSeconds: number }) => void
 			pause?: (data: { durationAtInSeconds: number }) => void
