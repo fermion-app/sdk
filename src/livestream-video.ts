@@ -191,7 +191,7 @@ export class FermionLivestreamVideo {
 		}
 	}
 
-	public getHlsPlaybackConfig(options: PlaybackSourceOptions) {
+	public async getHlsPlaybackConfig(options: PlaybackSourceOptions) {
 		const { origin, masterM3u8Pathname, urlSearchParamString, clearkeyDecryptionKeyInHex } =
 			options
 
@@ -208,7 +208,7 @@ export class FermionLivestreamVideo {
 			keyUri = `data:text/plain;base64,${window.btoa(String.fromCharCode(...bytes))}`
 		}
 
-		const PlaylistLoader = this.createCustomLoader({
+		const PlaylistLoader = await this.createCustomLoader({
 			signedUrlParam: urlSearchParamString,
 			keyUri
 		})
