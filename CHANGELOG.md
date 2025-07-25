@@ -1,5 +1,11 @@
 # @fermion-app/sdk
 
+## 0.10.0
+
+### Minor Changes
+
+-   5dbe5bc: split builds for old and new bundlers
+
 ## 0.9.0
 
 ### Minor Changes
