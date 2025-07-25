@@ -1,5 +1,11 @@
 # @fermion-app/sdk
 
+## 0.11.0
+
+### Minor Changes
+
+-   534fc20: add webrtc livestream ended event
+
 ## 0.10.0
 
 ### Minor Changes
