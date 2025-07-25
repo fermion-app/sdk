@@ -26,6 +26,11 @@ export const iframeEventSchema = z
 	)
 	.or(
 		z.object({
+			type: z.literal('webrtc:livestream-ended')
+		})
+	)
+	.or(
+		z.object({
 			type: z.literal('video:time-updated'),
 			currentTimeInSeconds: z.number()
 		})

@@ -249,7 +249,7 @@ export class FermionLivestreamVideo {
 			pause?: (data: { durationAtInSeconds: number }) => void
 			ended?: () => void
 			timeUpdated?: (data: { currentTimeInSeconds: number }) => void
-			livestreamEnded?: () => void
+			livestreamEnded?: (data: { type: 'video' | 'webrtc' }) => void
 		} = {}
 
 		const messageHandler = (event: MessageEvent<unknown>) => {
@@ -274,8 +274,11 @@ export class FermionLivestreamVideo {
 							currentTimeInSeconds: data.currentTimeInSeconds
 						})
 						break
+					case 'webrtc:livestream-ended':
+						eventCallbacks.livestreamEnded?.({ type: 'webrtc' })
+						break
 					case 'video:livestream-ended':
-						eventCallbacks.livestreamEnded?.()
+						eventCallbacks.livestreamEnded?.({ type: 'video' })
 						break
 				}
 			} catch (error) {
