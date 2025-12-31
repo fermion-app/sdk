@@ -12,14 +12,10 @@ export interface FermionRecordedVideoOptions {
  * Options for customizing the video player UI colors
  */
 export interface PlayerColorCustomization {
-	/** Color of the seekbar/progress bar (e.g., '#ff0a00') */
+	/** Color of the seekbar/progress bar and its handle (e.g., '#ff0a00') */
 	seekbarColor?: string
-	/** Color of the seekbar handle/knob (e.g., '#ff0a00') */
-	seekbarHandleColor?: string
-	/** Color of the control buttons like play/pause, mute, fullscreen (e.g., '#ffffff') */
+	/** Color of the control buttons like play/pause, mute, fullscreen, and volume slider (e.g., '#ffffff') */
 	controlsColor?: string
-	/** Color of the volume slider (e.g., '#ffffff') */
-	volumeSliderColor?: string
 }
 
 /**
@@ -168,14 +164,9 @@ export class FermionRecordedVideo {
 		if (playerColors.seekbarColor) {
 			params.set('seekbar-color', playerColors.seekbarColor)
 		}
-		if (playerColors.seekbarHandleColor) {
-			params.set('seekbar-handle-color', playerColors.seekbarHandleColor)
-		}
+
 		if (playerColors.controlsColor) {
 			params.set('controls-color', playerColors.controlsColor)
-		}
-		if (playerColors.volumeSliderColor) {
-			params.set('volume-slider-color', playerColors.volumeSliderColor)
 		}
 
 		const paramString = params.toString()
@@ -193,8 +184,8 @@ export class FermionRecordedVideo {
 	 * // Embed with custom player colors
 	 * const embed = video.getPubliclyEmbedPlaybackIframeCode({
 	 *   playerColors: {
-	 *     seekbarColor: '#00ff00',
-	 *     controlsColor: '#ffffff'
+	 *     seekbarColor: '#00ff00',  // Progress bar and handle
+	 *     controlsColor: '#ffffff'  // Buttons and volume slider
 	 *   }
 	 * });
 	 * ```
@@ -236,10 +227,8 @@ export class FermionRecordedVideo {
 	 * const embed = video.getPrivateEmbedPlaybackIframeCode({
 	 *   jwtToken: 'your-jwt-token',
 	 *   playerColors: {
-	 *     seekbarColor: '#ff0000',
-	 *     seekbarHandleColor: '#ff0000',
-	 *     controlsColor: '#ffffff',
-	 *     volumeSliderColor: '#ffffff'
+	 *     seekbarColor: '#ff0000',   // Progress bar and handle
+	 *     controlsColor: '#ffffff'   // Buttons and volume slider
 	 *   }
 	 * });
 	 * ```
