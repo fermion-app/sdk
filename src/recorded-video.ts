@@ -9,11 +9,35 @@ export interface FermionRecordedVideoOptions {
 }
 
 /**
+ * Options for customizing the video player UI colors
+ */
+export interface PlayerColorCustomization {
+	/** Color of the seekbar/progress bar (e.g., '#ff0a00') */
+	seekbarColor?: string
+	/** Color of the seekbar handle/knob (e.g., '#ff0a00') */
+	seekbarHandleColor?: string
+	/** Color of the control buttons like play/pause, mute, fullscreen (e.g., '#ffffff') */
+	controlsColor?: string
+	/** Color of the volume slider (e.g., '#ffffff') */
+	volumeSliderColor?: string
+}
+
+/**
+ * Options for public video embedding
+ */
+export interface VideoPublicEmbedOptions {
+	/** Customization options for the video player UI */
+	playerColors?: PlayerColorCustomization
+}
+
+/**
  * Options for private video embedding
  */
 export interface VideoPrivateEmbedOptions {
 	/** JWT token for authenticating private video access */
 	jwtToken: string
+	/** Customization options for the video player UI */
+	playerColors?: PlayerColorCustomization
 }
 
 /**
@@ -134,12 +158,52 @@ export class FermionRecordedVideo {
 	}
 
 	/**
-	 * Get iframe code for publicly embeddable video
+	 * Build URL search params for player color customization
 	 */
-	getPubliclyEmbedPlaybackIframeCode(): VideoIframeEmbedResult {
+	private buildColorParams(playerColors?: PlayerColorCustomization): string {
+		if (!playerColors) return ''
+
+		const params = new URLSearchParams()
+
+		if (playerColors.seekbarColor) {
+			params.set('seekbar-color', playerColors.seekbarColor)
+		}
+		if (playerColors.seekbarHandleColor) {
+			params.set('seekbar-handle-color', playerColors.seekbarHandleColor)
+		}
+		if (playerColors.controlsColor) {
+			params.set('controls-color', playerColors.controlsColor)
+		}
+		if (playerColors.volumeSliderColor) {
+			params.set('volume-slider-color', playerColors.volumeSliderColor)
+		}
+
+		const paramString = params.toString()
+		return paramString ? `&${paramString}` : ''
+	}
+
+	/**
+	 * Get iframe code for publicly embeddable video
+	 * @param options Optional customization options for the player UI
+	 * @example
+	 * ```typescript
+	 * // Basic embed without customization
+	 * const embed = video.getPubliclyEmbedPlaybackIframeCode();
+	 *
+	 * // Embed with custom player colors
+	 * const embed = video.getPubliclyEmbedPlaybackIframeCode({
+	 *   playerColors: {
+	 *     seekbarColor: '#00ff00',
+	 *     controlsColor: '#ffffff'
+	 *   }
+	 * });
+	 * ```
+	 */
+	getPubliclyEmbedPlaybackIframeCode(options?: VideoPublicEmbedOptions): VideoIframeEmbedResult {
 		const encodedVideoId = encodeURIComponent(this.videoId)
 		this.iframeId = this.generateIframeId()
-		const iframeUrl = `https://${this.websiteHostname}/embed/recorded-video?video-id=${encodedVideoId}`
+		const colorParams = this.buildColorParams(options?.playerColors)
+		const iframeUrl = `https://${this.websiteHostname}/embed/recorded-video?video-id=${encodedVideoId}${colorParams}`
 		const iframeHtml = `<iframe
       id="${this.iframeId}"
       width="1280"
@@ -160,12 +224,32 @@ export class FermionRecordedVideo {
 
 	/**
 	 * Get iframe code for privately embeddable video (requires JWT token)
+	 * @param options Options containing JWT token and optional player customization
+	 * @example
+	 * ```typescript
+	 * // Basic private embed
+	 * const embed = video.getPrivateEmbedPlaybackIframeCode({
+	 *   jwtToken: 'your-jwt-token'
+	 * });
+	 *
+	 * // Private embed with custom player colors
+	 * const embed = video.getPrivateEmbedPlaybackIframeCode({
+	 *   jwtToken: 'your-jwt-token',
+	 *   playerColors: {
+	 *     seekbarColor: '#ff0000',
+	 *     seekbarHandleColor: '#ff0000',
+	 *     controlsColor: '#ffffff',
+	 *     volumeSliderColor: '#ffffff'
+	 *   }
+	 * });
+	 * ```
 	 */
 	getPrivateEmbedPlaybackIframeCode(options: VideoPrivateEmbedOptions): VideoIframeEmbedResult {
 		const encodedVideoId = encodeURIComponent(this.videoId)
 		const encodedToken = encodeURIComponent(options.jwtToken)
 		this.iframeId = this.generateIframeId()
-		const iframeUrl = `https://${this.websiteHostname}/embed/recorded-video?video-id=${encodedVideoId}&token=${encodedToken}`
+		const colorParams = this.buildColorParams(options.playerColors)
+		const iframeUrl = `https://${this.websiteHostname}/embed/recorded-video?video-id=${encodedVideoId}&token=${encodedToken}${colorParams}`
 		const iframeHtml = `<iframe
       id="${this.iframeId}"
       width="1280"
@@ -197,7 +281,10 @@ export class FermionRecordedVideo {
 	/**
 	 * Send postMessage to iframe with error handling
 	 */
-	private sendMessageToIframe(iframe: HTMLIFrameElement, message: { type: string }): void {
+	private sendMessageToIframe(
+		iframe: HTMLIFrameElement,
+		message: { type: string; seconds?: number }
+	): void {
 		if (!iframe.contentWindow) {
 			console.error(
 				'Fermion Video: Iframe content window is not available. The iframe may not be fully loaded yet.'
@@ -244,6 +331,33 @@ export class FermionRecordedVideo {
 		}
 
 		this.sendMessageToIframe(targetIframe, { type: 'video:pause' })
+	}
+
+	/**
+	 * Seek to a specific timestamp in the video
+	 * @param seconds The time in seconds to seek to (must be non-negative)
+	 * @param iframe Optional iframe element. If not provided, will search for iframe by ID
+	 * @example
+	 * ```typescript
+	 * // Seek to 30 seconds
+	 * video.seekTo(30);
+	 *
+	 * // Seek to 1 minute 30 seconds
+	 * video.seekTo(90);
+	 *
+	 * // Seek with explicit iframe
+	 * const iframe = document.querySelector('iframe');
+	 * video.seekTo(45, iframe);
+	 * ```
+	 */
+	seekTo(seconds: number, iframe?: HTMLIFrameElement): void {
+		const targetIframe = iframe || this.findIframeById()
+
+		if (targetIframe != null && seconds >= 0) {
+			this.sendMessageToIframe(targetIframe, { type: 'video:seek', seconds })
+		} else {
+			console.error('Fermion Video: Invalid seek time. Please provide a valid non-negative number in seconds')
+		}
 	}
 
 	/**

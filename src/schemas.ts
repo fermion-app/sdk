@@ -35,6 +35,12 @@ export const iframeEventSchema = z
 			currentTimeInSeconds: z.number()
 		})
 	)
+	.or(
+		z.object({
+			type: z.literal('video:seek'),
+			seconds: z.number()
+		})
+	)
 
 /**
  * Type for iframe events
