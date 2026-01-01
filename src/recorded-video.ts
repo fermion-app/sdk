@@ -345,7 +345,9 @@ export class FermionRecordedVideo {
 		if (targetIframe != null && seconds >= 0) {
 			this.sendMessageToIframe(targetIframe, { type: 'video:seek', seconds })
 		} else {
-			console.error('Fermion Video: Invalid seek time. Please provide a valid non-negative number in seconds')
+			console.error(
+				'Fermion Video: Invalid seek time. Please provide a valid non-negative number in seconds'
+			)
 		}
 	}
 
