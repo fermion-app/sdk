@@ -9,9 +9,9 @@ export interface FermionRecordedVideoOptions {
 }
 
 /**
- * Options for customizing the video player UI colors
+ * Options for customizing the video player appearance
  */
-export interface PlayerColorCustomization {
+export interface PlayerAppearance {
 	/** Color of the seekbar/progress bar and its handle (e.g., '#ff0a00') */
 	seekbarColor?: string
 	/** Color of the control buttons like play/pause, mute, fullscreen, and volume slider (e.g., '#ffffff') */
@@ -23,7 +23,7 @@ export interface PlayerColorCustomization {
  */
 export interface VideoPublicEmbedOptions {
 	/** Customization options for the video player UI */
-	playerColors?: PlayerColorCustomization
+	playerAppearance?: PlayerAppearance
 }
 
 /**
@@ -33,7 +33,7 @@ export interface VideoPrivateEmbedOptions {
 	/** JWT token for authenticating private video access */
 	jwtToken: string
 	/** Customization options for the video player UI */
-	playerColors?: PlayerColorCustomization
+	playerAppearance?: PlayerAppearance
 }
 
 /**
@@ -154,19 +154,19 @@ export class FermionRecordedVideo {
 	}
 
 	/**
-	 * Build URL search params for player color customization
+	 * Build URL search params for player appearance customization
 	 */
-	private buildColorParams(playerColors?: PlayerColorCustomization): string {
-		if (!playerColors) return ''
+	private buildAppearanceParams(playerAppearance?: PlayerAppearance): string {
+		if (!playerAppearance) return ''
 
 		const params = new URLSearchParams()
 
-		if (playerColors.seekbarColor) {
-			params.set('seekbar-color', playerColors.seekbarColor)
+		if (playerAppearance.seekbarColor) {
+			params.set('seekbar-color', playerAppearance.seekbarColor)
 		}
 
-		if (playerColors.controlsColor) {
-			params.set('controls-color', playerColors.controlsColor)
+		if (playerAppearance.controlsColor) {
+			params.set('controls-color', playerAppearance.controlsColor)
 		}
 
 		const paramString = params.toString()
@@ -181,9 +181,9 @@ export class FermionRecordedVideo {
 	 * // Basic embed without customization
 	 * const embed = video.getPubliclyEmbedPlaybackIframeCode();
 	 *
-	 * // Embed with custom player colors
+	 * // Embed with custom player appearance
 	 * const embed = video.getPubliclyEmbedPlaybackIframeCode({
-	 *   playerColors: {
+	 *   playerAppearance: {
 	 *     seekbarColor: '#00ff00',  // Progress bar and handle
 	 *     controlsColor: '#ffffff'  // Buttons and volume slider
 	 *   }
@@ -193,7 +193,7 @@ export class FermionRecordedVideo {
 	getPubliclyEmbedPlaybackIframeCode(options?: VideoPublicEmbedOptions): VideoIframeEmbedResult {
 		const encodedVideoId = encodeURIComponent(this.videoId)
 		this.iframeId = this.generateIframeId()
-		const colorParams = this.buildColorParams(options?.playerColors)
+		const colorParams = this.buildAppearanceParams(options?.playerAppearance)
 		const iframeUrl = `https://${this.websiteHostname}/embed/recorded-video?video-id=${encodedVideoId}${colorParams}`
 		const iframeHtml = `<iframe
       id="${this.iframeId}"
@@ -223,10 +223,10 @@ export class FermionRecordedVideo {
 	 *   jwtToken: 'your-jwt-token'
 	 * });
 	 *
-	 * // Private embed with custom player colors
+	 * // Private embed with custom player appearance
 	 * const embed = video.getPrivateEmbedPlaybackIframeCode({
 	 *   jwtToken: 'your-jwt-token',
-	 *   playerColors: {
+	 *   playerAppearance: {
 	 *     seekbarColor: '#ff0000',   // Progress bar and handle
 	 *     controlsColor: '#ffffff'   // Buttons and volume slider
 	 *   }
@@ -237,7 +237,7 @@ export class FermionRecordedVideo {
 		const encodedVideoId = encodeURIComponent(this.videoId)
 		const encodedToken = encodeURIComponent(options.jwtToken)
 		this.iframeId = this.generateIframeId()
-		const colorParams = this.buildColorParams(options.playerColors)
+		const colorParams = this.buildAppearanceParams(options.playerAppearance)
 		const iframeUrl = `https://${this.websiteHostname}/embed/recorded-video?video-id=${encodedVideoId}&token=${encodedToken}${colorParams}`
 		const iframeHtml = `<iframe
       id="${this.iframeId}"
